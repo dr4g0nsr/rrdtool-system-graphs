@@ -59,8 +59,8 @@ class rrd_update {
      */
     public function create_rrd() {
         foreach ($this->config["monitor_disk"] as $disk) {
-            $update = $this->config["monitor_disk"];
-            $update1 = $this->config["monitor_disk"] * 2;
+            $update = (int)$this->config["monitor_disk"];
+            $update1 = $update * 2;
             $command = "create " . __DIR__ . "/rrd/" . $disk . ".rrd --step {$update} \
   DS:temp:GAUGE:{$update1}:-273:5000 \
   RRA:AVERAGE:0.5:1:1200 \
