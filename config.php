@@ -17,10 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// configs
 $config = [
-    "title" => "RRD tool page",
-    "server" => "server1",
-    "monitor_disk" => ["sda", "sdb"],
-    "monitor_network" => ["eth0"],
-    "monitor_apache"=>[],
+    "title" => "RRD tool page", // title of the page
+    "server" => "server1",  // server name
+    "update" => 300,    // how many sec between updates
+    "monitor_disk" => ["sda", "sdb"],   // hard disk names to monitor
+    "monitor_network" => ["eth0"],  // ethernet nic to monitor
+    "monitor_apache"=>[],   // apache
 ];
