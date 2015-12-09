@@ -49,7 +49,7 @@ class rrd_tools {
                 $line = str_replace("  ", " ", $line);
             }
             $line = explode(" ", $line);
-            $index_counter=$index;
+            $index_counter = $index;
             while ($index_counter > 0) {
                 $name = array_shift($line);
                 $index_counter--;
@@ -78,10 +78,9 @@ class rrd_tools {
     public function update_rrd() {
         foreach ($this->config["monitor_disk"] as $disk) {
             //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
-            $meminfo = $this->parse_proc("/proc/diskstats", 4);
-            log::debug($meminfo);
-            $read=(int)$meminfo[$disk][0];
-            $write=(int)$meminfo[$disk][4];
+            $diskinfo = $this->parse_proc("/proc/diskstats", 4);
+            $read = (int) $diskinfo[$disk][0];
+            $write = (int) $diskinfo[$disk][4];
             $command = "update " . __DIR__ . "/rrd/" . $disk . ".rrd N:{$read}:{$write}";
             $this->exec_rrd($command);
         }
