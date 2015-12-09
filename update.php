@@ -45,6 +45,7 @@ class rrd_tools {
         $lines = explode("\n", file_get_contents($path));
         $lines_clean = "";
         foreach ($lines as $line) {
+            $line = trim($line);
             for ($c = 1; $c < 20; $c++) {
                 $line = str_replace("  ", " ", $line);
             }
@@ -76,24 +77,68 @@ class rrd_tools {
     }
 
     public function update_rrd() {
-        foreach ($this->config["monitor_disk"] as $disk) {
+        foreach ($this->config["monitor_disk"] as $item) {
             //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
-            $diskinfo = $this->parse_proc("/proc/diskstats", 4);
-            $read = (int) $diskinfo[$disk][0];
-            $write = (int) $diskinfo[$disk][4];
-            $command = "update " . __DIR__ . "/rrd/" . $disk . ".rrd N:{$read}:{$write}";
+            $info = $this->parse_proc("/proc/diskstats", 3);
+            $read = (int) $info[$item][0];
+            $write = (int) $info[$item][4];
+            $readtime = (int) $info[$item][3];
+            $writetime = (int) $info[$item][7];
+            $ioprogress = (int) $info[$item][8];
+            $io_time = (int) $info[$item][9];
+            $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$read}:{$write}:{$readtime}:{$writetime}:{$ioprogress}:{$io_time}";
+            $this->exec_rrd($command);
+        }
+        foreach ($this->config["monitor_network"] as $item) {
+            //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
+            $info = $this->parse_proc("/proc/net/dev");
+            $item1 = $item . ":";
+            $receive_bytes = (int) $info[$item1][0];
+            $receive_packets = (int) $info[$item1][1];
+            $receive_drop = (int) $info[$item1][3];
+            $sent_bytes = (int) $info[$item1][8];
+            $sent_packets = (int) $info[$item1][9];
+            $sent_drop = (int) $info[$item1][11];
+            $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$receive_bytes}:{$receive_packets}:{$receive_drop}:{$sent_bytes}:{$sent_packets}:{$sent_drop}";
             $this->exec_rrd($command);
         }
     }
 
     public function draw_graphs() {
-        foreach ($this->config["monitor_disk"] as $disk) {
-            $command = 'graph ' . __DIR__ . '/graphs/' . $disk . '.png \
+        foreach ($this->config["monitor_disk"] as $item) {
+            $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
 --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
-DEF:read=' . __DIR__ . '/rrd/' . $disk . '.rrd:read:AVERAGE \
-DEF:write=' . __DIR__ . '/rrd/' . $disk . '.rrd:write:AVERAGE:step=1800 \
-LINE1:read#0000FF:"default resolution\l" \
-LINE1:write#00CCFF:"resolution 1800 seconds per interval\l"';
+DEF:read=' . __DIR__ . '/rrd/' . $item . '.rrd:read:AVERAGE \
+DEF:write=' . __DIR__ . '/rrd/' . $item . '.rrd:write:AVERAGE \
+DEF:readtime=' . __DIR__ . '/rrd/' . $item . '.rrd:readtime:AVERAGE \
+DEF:writetime=' . __DIR__ . '/rrd/' . $item . '.rrd:writetime:AVERAGE \
+DEF:io_progress=' . __DIR__ . '/rrd/' . $item . '.rrd:io_progress:AVERAGE \
+DEF:io_time=' . __DIR__ . '/rrd/' . $item . '.rrd:io_time:AVERAGE \
+LINE1:read#0000FF:"Read for disk ' . $item . '\l" \
+LINE1:write#00CCFF:"Write for disk ' . $item . '\l" \
+LINE1:readtime#CCCCFF:"Read time for disk ' . $item . '\l" \
+LINE1:writetime#FF00FF:"Write time for disk ' . $item . '\l" \
+LINE1:io_progress#FF0000:"IO progress for disk ' . $item . '\l" \
+LINE1:io_time#00FF00:"IO time for disk ' . $item . '\l" \
+';
+            $this->exec_rrd($command);
+        }
+        foreach ($this->config["monitor_network"] as $item) {
+            $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
+--end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+DEF:rxbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:rxbytes:AVERAGE \
+DEF:rxpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:rxpackets:AVERAGE \
+DEF:rxdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:rxdrop:AVERAGE \
+DEF:txbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:txbytes:AVERAGE \
+DEF:txpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:txpackets:AVERAGE \
+DEF:txdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:txdrop:AVERAGE \
+LINE1:rxbytes#0000FF:"RX for net ' . $item . '\l" \
+LINE1:rxpackets#00CCFF:"RX packets net ' . $item . '\l" \
+LINE1:rxdrop#CCCCFF:"RX drop for net ' . $item . '\l" \
+LINE1:txbytes#FF00FF:"TX for net ' . $item . '\l" \
+LINE1:txpackets#FF0000:"TX packets for net ' . $item . '\l" \
+LINE1:txdrop#00FF00:"TX drop for net ' . $item . '\l" \
+';
             $this->exec_rrd($command);
         }
     }
@@ -103,41 +148,47 @@ LINE1:write#00CCFF:"resolution 1800 seconds per interval\l"';
      * 
      */
     public function create_rrd() {
-        foreach ($this->config["monitor_disk"] as $disk) {
+        foreach ($this->config["monitor_disk"] as $item) {
             $update = (int) $this->config["update"];
             $update1 = $update * 2;
             $records = $update1 * 2;
             $records1 = $update1 * 4;
-            $command = "create " . __DIR__ . "/rrd/" . $disk . ".rrd --step {$update} \
+            $filename = __DIR__ . "/rrd/" . $item . ".rrd";
+            $command = "create {$filename} --step {$update} \
 DS:read:COUNTER:{$update1}:0:9999999999999 \
 DS:write:COUNTER:{$update1}:0:9999999999999 \
+DS:readtime:COUNTER:{$update1}:0:9999999999999 \
+DS:writetime:COUNTER:{$update1}:0:9999999999999 \
+DS:io_progress:COUNTER:{$update1}:0:9999999999999 \
+DS:io_time:COUNTER:{$update1}:0:9999999999999 \
 RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
 RRA:AVERAGE:0.5:10:{$records1}";
+            unlink($filename);
             $this->exec_rrd($command);
         }
 
-        foreach ($this->config["monitor_network"] as $net) {
+        foreach ($this->config["monitor_network"] as $item) {
             $update = (int) $this->config["update"];
             $update1 = $update * 2;
             $records = $update1 * 2;
             $records1 = $update1 * 4;
-            $command = "create " . __DIR__ . "/rrd/" . $net . ".rrd --step {$update} \
-DS:read:GAUGE:{$update1}:0:100 \
-DS:write:GAUGE:{$update1}:0:100 \
+            $filename = __DIR__ . "/rrd/" . $item . ".rrd";
+            $command = "create {$filename} --step {$update} \
+DS:rxbytes:COUNTER:{$update1}:0:9999999999999 \
+DS:rxpackets:COUNTER:{$update1}:0:9999999999999 \
+DS:rxdrop:COUNTER:{$update1}:0:9999999999999 \
+DS:txbytes:COUNTER:{$update1}:0:9999999999999 \
+DS:txpackets:COUNTER:{$update1}:0:9999999999999 \
+DS:txdrop:COUNTER:{$update1}:0:9999999999999 \
 RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
 RRA:AVERAGE:0.5:10:{$records1}";
+            unlink($filename);
             $this->exec_rrd($command);
         }
     }
 
 }
-
-$rrd = new rrd_tools;
-$rrd->create_rrd();
-//$rrd->update_rrd();
-//$rrd->draw_graphs();
-
