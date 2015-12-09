@@ -30,15 +30,37 @@ class rrd_tools {
      * 
      * @param string $config_file
      */
-    public function load_config($config_file = false) {
-        if (!$config_file) {
-            $config_file = __DIR__ . "/config.php";
-        }
-        if (!file_exists($config_file)) {
-            log:logdie("No config file");
-        }
-        require_once($config_file);
+    public function load_config() {
+        global $config;
         $this->config = $config;
+    }
+
+    public function parse_proc($path, $index = 1) {
+        if (!file_exists($path)) {
+            return false;
+        }
+        if ($index < 1) {
+            return false;
+        }
+        $lines = explode("\n", file_get_contents($path));
+        $lines_clean = "";
+        foreach ($lines as $line) {
+            for ($c = 1; $c < 20; $c++) {
+                $line = str_replace("  ", " ", $line);
+            }
+            $line = explode(" ", $line);
+            $index_counter=$index;
+            while ($index_counter > 0) {
+                $name = array_shift($line);
+                $index_counter--;
+                if (!$name) {
+                    continue;
+                }
+            }
+
+            $lines_clean[$name] = $line;
+        }
+        return $lines_clean;
     }
 
     /**
@@ -50,11 +72,14 @@ class rrd_tools {
         if (!$command) {
             return false;
         }
-        exec("rrdtool " . $command);    // run rrdtool
+        $r = exec("rrdtool " . $command);    // run rrdtool
     }
 
     public function update_rrd() {
         foreach ($this->config["monitor_disk"] as $disk) {
+            //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
+            $meminfo = $this->parse_proc("/proc/diskstats", 4);
+            log::debug($meminfo);
             $command = "update " . __DIR__ . "/rrd/" . $disk . ".rrd N:3.44:5.11";
             $this->exec_rrd($command);
         }

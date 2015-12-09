@@ -17,23 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class log {
-
-    public static function message($message = "") {
-        print time() . " - " . $message . "\n";
-    }
-
-    public static function messagedie($message = "") {
-        self::log($message);
-    }
-
-    public static function debug($var) {
-        var_dump($var);
-    }
-
-    public static function debugdie($var) {
-        self::debug($var);
-        die;
-    }
-
-}
+require_once(__DIR__ . "/init.php");
+$rrd = new rrd_tools;
+$rrd->update_rrd();
+$rrd->draw_graphs();
