@@ -24,13 +24,14 @@ require_once(__DIR__ . "/update.php");
 $rrd = new rrd_tools;
 
 while (1 == 1) {
-    print "Run RRD\n";
+    print "\nRun RRD\n";
     $rrd->update_rrd();
     $rrd->draw_graphs();
     $timeout = $config["update"];
     while ($timeout > 0) {
         sleep(1);
-        print ($timeout . "\n");
+        //echo "\033[3D";
+        print ($timeout."\n");
         $timeout--;
     }
 }

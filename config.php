@@ -22,6 +22,7 @@ $config = [
     "title" => "RRD tool page", // title of the page
     "server" => "server1",  // server name
     "update" => 300,    // how many sec between updates (300=5min)
+    "graph_width" => 400,   // width of graph in pixel
     "monitor_disk" => ["sda", "sdb"],   // hard disk names to monitor
     "monitor_network" => ["eth0"],  // ethernet nic to monitor
     "monitor_apache"=>[],   // apache

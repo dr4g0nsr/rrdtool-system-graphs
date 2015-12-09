@@ -89,7 +89,7 @@ class rrd_tools {
     public function draw_graphs() {
         foreach ($this->config["monitor_disk"] as $disk) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $disk . '.png \
---end now --start end-120000s --width 400 \
+--end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:read=' . __DIR__ . '/rrd/' . $disk . '.rrd:read:AVERAGE \
 DEF:write=' . __DIR__ . '/rrd/' . $disk . '.rrd:write:AVERAGE:step=1800 \
 LINE1:read#0000FF:"default resolution\l" \
