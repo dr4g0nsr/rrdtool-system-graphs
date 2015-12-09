@@ -21,7 +21,7 @@ class rrd_update {
 
     private $config = NULL;   // config file, loaded
 
-    public function __rrd_update() {
+    public function rrd_update() {
         $this->load_config();
     }
 
@@ -38,6 +38,7 @@ class rrd_update {
             log:logdie("No config file");
         }
         require_once($config_file);
+        $this->config = $config;
     }
 
     /**
@@ -57,7 +58,17 @@ class rrd_update {
      * 
      */
     public function create_rrd() {
-        $this->exec_rrd();
+        foreach ($this->config["monitor_disk"] as $disk) {
+            $update = $this->config["monitor_disk"];
+            $update1 = $this->config["monitor_disk"] * 2;
+            $command = "create " . __DIR__ . "/rrd/" . $disk . ".rrd --step {$update} \
+  DS:temp:GAUGE:{$update1}:-273:5000 \
+  RRA:AVERAGE:0.5:1:1200 \
+  RRA:MIN:0.5:12:2400 \
+  RRA:MAX:0.5:12:2400 \
+  RRA:AVERAGE:0.5:12:2400";
+            $this->exec_rrd($command);
+        }
     }
 
 }
