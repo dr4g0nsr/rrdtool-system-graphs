@@ -19,11 +19,13 @@
 
 require_once(__DIR__ . "/init.php");
 
+require_once(__DIR__ . "/update.php");
+
 $rrd = new rrd_tools;
 
 while (1 == 1) {
-    sleep(60);
     print "Run RRD\n";
     $rrd->update_rrd();
     $rrd->draw_graphs();
+    sleep($config["update"]);
 }

@@ -80,7 +80,9 @@ class rrd_tools {
             //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
             $meminfo = $this->parse_proc("/proc/diskstats", 4);
             log::debug($meminfo);
-            $command = "update " . __DIR__ . "/rrd/" . $disk . ".rrd N:3.44:5.11";
+            $read=(int)$meminfo[$disk][0];
+            $write=(int)$meminfo[$disk][4];
+            $command = "update " . __DIR__ . "/rrd/" . $disk . ".rrd N:{$read}:{$write}";
             $this->exec_rrd($command);
         }
     }
@@ -108,8 +110,8 @@ LINE1:write#00CCFF:"resolution 1800 seconds per interval\l"';
             $records = $update1 * 2;
             $records1 = $update1 * 4;
             $command = "create " . __DIR__ . "/rrd/" . $disk . ".rrd --step {$update} \
-DS:read:GAUGE:{$update1}:0:100 \
-DS:write:GAUGE:{$update1}:0:100 \
+DS:read:COUNTER:{$update1}:0:9999999999999 \
+DS:write:COUNTER:{$update1}:0:9999999999999 \
 RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
@@ -136,7 +138,7 @@ RRA:AVERAGE:0.5:10:{$records1}";
 }
 
 $rrd = new rrd_tools;
-//$rrd->create_rrd();
-$rrd->update_rrd();
-$rrd->draw_graphs();
+$rrd->create_rrd();
+//$rrd->update_rrd();
+//$rrd->draw_graphs();
 
