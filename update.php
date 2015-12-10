@@ -77,8 +77,8 @@ class rrd_tools {
     }
 
     public function update_rrd() {
+
         foreach ($this->config["monitor_disk"] as $item) {
-            //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
             $info = $this->parse_proc("/proc/diskstats", 3);
             $read = (int) $info[$item][0];
             $write = (int) $info[$item][4];
@@ -89,8 +89,8 @@ class rrd_tools {
             $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$read}:{$write}:{$readtime}:{$writetime}:{$ioprogress}:{$io_time}";
             $this->exec_rrd($command);
         }
+
         foreach ($this->config["monitor_network"] as $item) {
-            //$e = exec("free -b |grep cache:|cut -d\":\" -f2|awk '{print $1}'");
             $info = $this->parse_proc("/proc/net/dev");
             $item1 = $item . ":";
             $receive_bytes = (int) $info[$item1][0];
@@ -102,9 +102,22 @@ class rrd_tools {
             $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$receive_bytes}:{$receive_packets}:{$receive_drop}:{$sent_bytes}:{$sent_packets}:{$sent_drop}";
             $this->exec_rrd($command);
         }
+
+        foreach ($this->config["monitor_memory"] as $item) {
+            $info = $this->parse_proc("/proc/meminfo");
+            $memtotal = $info["MemTotal:"][0];
+            $memfree = $info["MemFree:"][0];
+            $memavailable = $info["MemAvailable:"][0];
+            $membuffers = $info["Buffers:"][0];
+            $memcached = $info["Cached:"][0];
+            $swapcached = $info["SwapCached:"][0];
+            $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$memtotal}:{$memfree}:{$memavailable}:{$membuffers}:{$memcached}:{$swapcached}";
+            $this->exec_rrd($command);
+        }
     }
 
     public function draw_graphs() {
+        $html_links = "";
         foreach ($this->config["monitor_disk"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
 --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
@@ -122,6 +135,7 @@ LINE1:io_progress#FF0000:"IO progress for disk ' . $item . '\l" \
 LINE1:io_time#00FF00:"IO time for disk ' . $item . '\l" \
 ';
             $this->exec_rrd($command);
+            $html_links.="<img src='{$item}.png'>";
         }
         foreach ($this->config["monitor_network"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
@@ -140,7 +154,40 @@ LINE1:txpackets#FF0000:"TX packets for net ' . $item . '\l" \
 LINE1:txdrop#00FF00:"TX drop for net ' . $item . '\l" \
 ';
             $this->exec_rrd($command);
+            $html_links.="<img src='{$item}.png'>";
         }
+        foreach ($this->config["monitor_memory"] as $item) {
+            $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
+--end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+DEF:total=' . __DIR__ . '/rrd/' . $item . '.rrd:total:AVERAGE \
+DEF:free=' . __DIR__ . '/rrd/' . $item . '.rrd:free:AVERAGE \
+DEF:available=' . __DIR__ . '/rrd/' . $item . '.rrd:available:AVERAGE \
+DEF:buffers=' . __DIR__ . '/rrd/' . $item . '.rrd:buffers:AVERAGE \
+DEF:cached=' . __DIR__ . '/rrd/' . $item . '.rrd:cached:AVERAGE \
+LINE1:total#0000FF:"RX for net ' . $item . '\l" \
+LINE1:free#00CCFF:"RX packets net ' . $item . '\l" \
+LINE1:available#CCCCFF:"RX drop for net ' . $item . '\l" \
+LINE1:buffers#FF00FF:"TX for net ' . $item . '\l" \
+LINE1:cached#FF0000:"TX packets for net ' . $item . '\l" \
+';
+            $this->exec_rrd($command);
+            $html_links.="<img src='{$item}.png'>";
+        }
+        $html = '<!DOCTYPE html>
+<html>
+    <head>
+        <title>' . $this->config["title"] . '</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>' . $this->config["server"] . '</div>
+        <img src="sda.png">
+        <img src="sdb.png">
+        <img src="eth0.png">
+    </body>
+</html>';
+        file_put_contents("graphs/index.html", $html);
     }
 
     /**
@@ -165,7 +212,9 @@ RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
 RRA:AVERAGE:0.5:10:{$records1}";
-            unlink($filename);
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
             $this->exec_rrd($command);
         }
 
@@ -186,7 +235,31 @@ RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
 RRA:AVERAGE:0.5:10:{$records1}";
-            unlink($filename);
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
+            $this->exec_rrd($command);
+        }
+
+        foreach ($this->config["monitor_memory"] as $item) {
+            $update = (int) $this->config["update"];
+            $update1 = $update * 2;
+            $records = $update1 * 2;
+            $records1 = $update1 * 4;
+            $filename = __DIR__ . "/rrd/" . $item . ".rrd";
+            $command = "create {$filename} --step {$update} \
+DS:total:COUNTER:{$update1}:0:9999999999999 \
+DS:free:COUNTER:{$update1}:0:9999999999999 \
+DS:available:COUNTER:{$update1}:0:9999999999999 \
+DS:buffers:COUNTER:{$update1}:0:9999999999999 \
+DS:cached:COUNTER:{$update1}:0:9999999999999 \
+RRA:AVERAGE:0.5:1:{$records} \
+RRA:MIN:0.5:10:{$records1} \
+RRA:MAX:0.5:10:{$records1} \
+RRA:AVERAGE:0.5:10:{$records1}";
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
             $this->exec_rrd($command);
         }
     }
