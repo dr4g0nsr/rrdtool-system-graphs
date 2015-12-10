@@ -119,55 +119,55 @@ class rrd_tools {
         $html_links = "";
         foreach ($this->config["monitor_disk"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
---end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Disk '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:read=' . __DIR__ . '/rrd/' . $item . '.rrd:read:AVERAGE \
 DEF:write=' . __DIR__ . '/rrd/' . $item . '.rrd:write:AVERAGE \
 DEF:readtime=' . __DIR__ . '/rrd/' . $item . '.rrd:readtime:AVERAGE \
 DEF:writetime=' . __DIR__ . '/rrd/' . $item . '.rrd:writetime:AVERAGE \
 DEF:io_progress=' . __DIR__ . '/rrd/' . $item . '.rrd:io_progress:AVERAGE \
 DEF:io_time=' . __DIR__ . '/rrd/' . $item . '.rrd:io_time:AVERAGE \
-LINE1:read#0000FF:"Read for disk ' . $item . '\l" \
-LINE1:write#00CCFF:"Write for disk ' . $item . '\l" \
-LINE1:readtime#CCCCFF:"Read time for disk ' . $item . '\l" \
-LINE1:writetime#FF00FF:"Write time for disk ' . $item . '\l" \
-LINE1:io_progress#FF0000:"IO progress for disk ' . $item . '\l" \
-LINE1:io_time#00FF00:"IO time for disk ' . $item . '\l" \
+LINE1:read#0000FF:"Read" \
+LINE1:write#00CCFF:"Write" \
+LINE1:readtime#CCCCFF:"Read time" \
+LINE1:writetime#FF00FF:"Write time" \
+LINE1:io_progress#FF0000:"IO progress" \
+LINE1:io_time#00FF00:"IO time" \
 ';
             $this->exec_rrd($command);
             $html_links.="<img src='{$item}.png'>";
         }
         foreach ($this->config["monitor_network"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
---end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Network card '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:rxbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:rxbytes:AVERAGE \
 DEF:rxpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:rxpackets:AVERAGE \
 DEF:rxdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:rxdrop:AVERAGE \
 DEF:txbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:txbytes:AVERAGE \
 DEF:txpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:txpackets:AVERAGE \
 DEF:txdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:txdrop:AVERAGE \
-LINE1:rxbytes#0000FF:"RX for net ' . $item . '\l" \
-LINE1:rxpackets#00CCFF:"RX packets net ' . $item . '\l" \
+LINE1:rxbytes#0000FF:"RX for net ' . $item . '" \
+LINE1:rxpackets#00CCFF:"RX packets net ' . $item . '" \
 LINE1:rxdrop#CCCCFF:"RX drop for net ' . $item . '\l" \
-LINE1:txbytes#FF00FF:"TX for net ' . $item . '\l" \
-LINE1:txpackets#FF0000:"TX packets for net ' . $item . '\l" \
-LINE1:txdrop#00FF00:"TX drop for net ' . $item . '\l" \
+LINE1:txbytes#FF00FF:"TX for net ' . $item . '" \
+LINE1:txpackets#FF0000:"TX packets for net ' . $item . '" \
+LINE1:txdrop#00FF00:"TX drop for net ' . $item . '" \
 ';
             $this->exec_rrd($command);
             $html_links.="<img src='{$item}.png'>";
         }
         foreach ($this->config["monitor_memory"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
---end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Memory '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:total=' . __DIR__ . '/rrd/' . $item . '.rrd:total:AVERAGE \
 DEF:free=' . __DIR__ . '/rrd/' . $item . '.rrd:free:AVERAGE \
 DEF:available=' . __DIR__ . '/rrd/' . $item . '.rrd:available:AVERAGE \
 DEF:buffers=' . __DIR__ . '/rrd/' . $item . '.rrd:buffers:AVERAGE \
 DEF:cached=' . __DIR__ . '/rrd/' . $item . '.rrd:cached:AVERAGE \
-LINE1:total#0000FF:"RX for net ' . $item . '\l" \
-LINE1:free#00CCFF:"RX packets net ' . $item . '\l" \
+LINE1:total#0000FF:"RX for net ' . $item . '" \
+LINE1:free#00CCFF:"RX packets net ' . $item . '" \
 LINE1:available#CCCCFF:"RX drop for net ' . $item . '\l" \
-LINE1:buffers#FF00FF:"TX for net ' . $item . '\l" \
-LINE1:cached#FF0000:"TX packets for net ' . $item . '\l" \
+LINE1:buffers#FF00FF:"TX for net ' . $item . '" \
+LINE1:cached#FF0000:"TX packets for net ' . $item . '" \
 ';
             $this->exec_rrd($command);
             $html_links.="<img src='{$item}.png'>";
