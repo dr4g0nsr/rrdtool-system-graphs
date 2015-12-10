@@ -119,7 +119,7 @@ class rrd_tools {
         $html_links = "";
         foreach ($this->config["monitor_disk"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
--t "Disk '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Disk ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:read=' . __DIR__ . '/rrd/' . $item . '.rrd:read:AVERAGE \
 DEF:write=' . __DIR__ . '/rrd/' . $item . '.rrd:write:AVERAGE \
 DEF:readtime=' . __DIR__ . '/rrd/' . $item . '.rrd:readtime:AVERAGE \
@@ -138,7 +138,7 @@ LINE1:io_time#00FF00:"IO time" \
         }
         foreach ($this->config["monitor_network"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
--t "Network card '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Network card ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:rxbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:rxbytes:AVERAGE \
 DEF:rxpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:rxpackets:AVERAGE \
 DEF:rxdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:rxdrop:AVERAGE \
@@ -157,7 +157,7 @@ LINE1:txdrop#00FF00:"TX drop" \
         }
         foreach ($this->config["monitor_memory"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
--t "Memory '.$item.'" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+-t "Memory ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
 DEF:total=' . __DIR__ . '/rrd/' . $item . '.rrd:total:AVERAGE \
 DEF:free=' . __DIR__ . '/rrd/' . $item . '.rrd:free:AVERAGE \
 DEF:available=' . __DIR__ . '/rrd/' . $item . '.rrd:available:AVERAGE \
@@ -178,10 +178,11 @@ LINE1:cached#FF0000:"Cached" \
         <title>' . $this->config["title"] . '</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="refresh" content="' . $this->config["update"] . '" >
     </head>
     <body>
         <div>' . $this->config["server"] . '</div>
-        '.$html_links.'
+        ' . $html_links . '
     </body>
 </html>';
         file_put_contents("graphs/index.html", $html);
