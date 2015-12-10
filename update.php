@@ -109,9 +109,8 @@ class rrd_tools {
             $memfree = $info["MemFree:"][0];
             $memavailable = $info["MemAvailable:"][0];
             $membuffers = $info["Buffers:"][0];
-            $memcached = $info["Cached:"][0];
             $swapcached = $info["SwapCached:"][0];
-            $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$memtotal}:{$memfree}:{$memavailable}:{$membuffers}:{$memcached}:{$swapcached}";
+            $command = "update " . __DIR__ . "/rrd/" . $item . ".rrd N:{$memtotal}:{$memfree}:{$memavailable}:{$membuffers}:{$swapcached}";
             $this->exec_rrd($command);
         }
     }
