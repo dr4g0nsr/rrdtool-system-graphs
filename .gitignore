@@ -6,3 +6,4 @@
 /rrd/eth0.rrd
 /rrd/sda.rrd
 /rrd/sdb.rrd
+/rrd/memory.rrd
