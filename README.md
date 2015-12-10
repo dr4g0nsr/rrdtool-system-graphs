@@ -4,14 +4,12 @@ Complete php script for system graphing.
 
 Uses simple web interface just to show graphs of system load.
 
-Requires:
-PHP
-Apache
-RRDTOOL
+Requires: PHP, Apache, RRDTOOL
 
 Install:
 
 Debian/Ubuntu:
+
 apt-get install apache2 php5 rrdtool
 
 Configure:
