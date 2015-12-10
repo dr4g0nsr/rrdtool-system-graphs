@@ -1,6 +1,8 @@
 /graphs/sda.png
 /graphs/sdb.png
 /graphs/eth0.png
+/graphs/memory.png
+/graphs/index.html
 /rrd/eth0.rrd
 /rrd/sda.rrd
 /rrd/sdb.rrd
