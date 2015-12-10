@@ -145,12 +145,12 @@ DEF:rxdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:rxdrop:AVERAGE \
 DEF:txbytes=' . __DIR__ . '/rrd/' . $item . '.rrd:txbytes:AVERAGE \
 DEF:txpackets=' . __DIR__ . '/rrd/' . $item . '.rrd:txpackets:AVERAGE \
 DEF:txdrop=' . __DIR__ . '/rrd/' . $item . '.rrd:txdrop:AVERAGE \
-LINE1:rxbytes#0000FF:"RX for net ' . $item . '" \
-LINE1:rxpackets#00CCFF:"RX packets net ' . $item . '" \
-LINE1:rxdrop#CCCCFF:"RX drop for net ' . $item . '\l" \
-LINE1:txbytes#FF00FF:"TX for net ' . $item . '" \
-LINE1:txpackets#FF0000:"TX packets for net ' . $item . '" \
-LINE1:txdrop#00FF00:"TX drop for net ' . $item . '" \
+LINE1:rxbytes#0000FF:"RX bytes" \
+LINE1:rxpackets#00CCFF:"RX packets" \
+LINE1:rxdrop#CCCCFF:"RX drop" \
+LINE1:txbytes#FF00FF:"TX bytes" \
+LINE1:txpackets#FF0000:"TX packets" \
+LINE1:txdrop#00FF00:"TX drop" \
 ';
             $this->exec_rrd($command);
             $html_links.="<img src='{$item}.png'><br>\n";
@@ -163,11 +163,11 @@ DEF:free=' . __DIR__ . '/rrd/' . $item . '.rrd:free:AVERAGE \
 DEF:available=' . __DIR__ . '/rrd/' . $item . '.rrd:available:AVERAGE \
 DEF:buffers=' . __DIR__ . '/rrd/' . $item . '.rrd:buffers:AVERAGE \
 DEF:cached=' . __DIR__ . '/rrd/' . $item . '.rrd:cached:AVERAGE \
-LINE1:total#0000FF:"RX for net ' . $item . '" \
-LINE1:free#00CCFF:"RX packets net ' . $item . '" \
-LINE1:available#CCCCFF:"RX drop for net ' . $item . '\l" \
-LINE1:buffers#FF00FF:"TX for net ' . $item . '" \
-LINE1:cached#FF0000:"TX packets for net ' . $item . '" \
+LINE1:total#0000FF:"Total" \
+LINE1:free#00CCFF:"Free" \
+LINE1:available#CCCCFF:"Available" \
+LINE1:buffers#FF00FF:"Buffers" \
+LINE1:cached#FF0000:"Cached" \
 ';
             $this->exec_rrd($command);
             $html_links.="<img src='{$item}.png'><br>\n";
