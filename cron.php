@@ -22,5 +22,7 @@ require_once(__DIR__ . "/init.php");
 require_once(__DIR__ . "/update.php");
 
 $rrd = new rrd_tools;
+
 $rrd->update_rrd();
+
 $rrd->draw_graphs();
