@@ -134,7 +134,7 @@ LINE1:io_progress#FF0000:"IO progress" \
 LINE1:io_time#00FF00:"IO time" \
 ';
             $this->exec_rrd($command);
-            $html_links.="<img src='{$item}.png'>";
+            $html_links.="<img src='{$item}.png'><br>\n";
         }
         foreach ($this->config["monitor_network"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
@@ -153,7 +153,7 @@ LINE1:txpackets#FF0000:"TX packets for net ' . $item . '" \
 LINE1:txdrop#00FF00:"TX drop for net ' . $item . '" \
 ';
             $this->exec_rrd($command);
-            $html_links.="<img src='{$item}.png'>";
+            $html_links.="<img src='{$item}.png'><br>\n";
         }
         foreach ($this->config["monitor_memory"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
@@ -170,7 +170,7 @@ LINE1:buffers#FF00FF:"TX for net ' . $item . '" \
 LINE1:cached#FF0000:"TX packets for net ' . $item . '" \
 ';
             $this->exec_rrd($command);
-            $html_links.="<img src='{$item}.png'>";
+            $html_links.="<img src='{$item}.png'><br>\n";
         }
         $html = '<!DOCTYPE html>
 <html>
@@ -181,9 +181,7 @@ LINE1:cached#FF0000:"TX packets for net ' . $item . '" \
     </head>
     <body>
         <div>' . $this->config["server"] . '</div>
-        <img src="sda.png">
-        <img src="sdb.png">
-        <img src="eth0.png">
+        '.$html_links.'
     </body>
 </html>';
         file_put_contents("graphs/index.html", $html);
