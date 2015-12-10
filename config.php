@@ -25,5 +25,6 @@ $config = [
     "graph_width" => 400,   // width of graph in pixel
     "monitor_disk" => ["sda", "sdb"],   // hard disk names to monitor
     "monitor_network" => ["eth0"],  // ethernet nic to monitor
+    "monitor_memory" => ["memory"],
     "monitor_apache"=>[],   // apache
 ];
