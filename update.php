@@ -79,18 +79,19 @@ class rrd_tools {
     public function update_rrd() {
 
         foreach ($this->config["monitor_cpu"] as $item) {
-            $info = $this->parse_proc("/proc/stat", 1);
-            $user = (int) $info[$item][0];
-            $nice = (int) $info[$item][1];
-            $system = (int) $info[$item][2];
-            $idle = (int) $info[$item][3];
-            $iowait = (int) $info[$item][4];
-            $irq = (int) $info[$item][5];
-            $softirq = (int) $info[$item][6];
-            $steal = (int) $info[$item][7];
-            $guest = (int) $info[$item][8];
-            $guest_nice = (int) $info[$item][9];
-            $command = "update " . __DIR__ . "/rrd/cpu.rrd N:{$user}:{$system}:{$iowait}:{$irq}";
+            $info = $this->parse_proc("/proc/stat");
+            $itemname = "cpu";
+            $user = (int) $info[$itemname][0];
+            $nice = (int) $info[$itemname][1];
+            $system = (int) $info[$itemname][2];
+            $idle = (int) $info[$itemname][3];
+            $iowait = (int) $info[$itemname][4];
+            $irq = (int) $info[$itemname][5];
+            $softirq = (int) $info[$itemname][6];
+            $steal = (int) $info[$itemname][7];
+            $guest = (int) $info[$itemname][8];
+            $guest_nice = (int) $info[$itemname][9];
+            $command = "update " . __DIR__ . "/rrd/cpu{$item}.rrd N:{$user}:{$system}:{$iowait}:{$irq}";
             $this->exec_rrd($command);
         }
 
@@ -134,12 +135,12 @@ class rrd_tools {
     public function draw_graphs() {
         $html_links = "";
         foreach ($this->config["monitor_cpu"] as $item) {
-            $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
+            $command = 'graph ' . __DIR__ . '/graphs/cpu' . $item . '.png \
 -t "CPU ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
-DEF:user=' . __DIR__ . '/rrd/' . $item . '.rrd:user:AVERAGE \
-DEF:system=' . __DIR__ . '/rrd/' . $item . '.rrd:system:AVERAGE \
-DEF:iowait=' . __DIR__ . '/rrd/' . $item . '.rrd:iowait:AVERAGE \
-DEF:irq=' . __DIR__ . '/rrd/' . $item . '.rrd:irq:AVERAGE \
+DEF:user=' . __DIR__ . '/rrd/cpu' . $item . '.rrd:user:AVERAGE \
+DEF:system=' . __DIR__ . '/rrd/cpu' . $item . '.rrd:system:AVERAGE \
+DEF:iowait=' . __DIR__ . '/rrd/cpu' . $item . '.rrd:iowait:AVERAGE \
+DEF:irq=' . __DIR__ . '/rrd/cpu' . $item . '.rrd:irq:AVERAGE \
 LINE1:user#0000FF:"User" \
 LINE1:system#00CCFF:"System" \
 LINE1:iowait#CCCCFF:"IOWait" \
@@ -230,12 +231,12 @@ LINE1:cached#FF0000:"Cached" \
             $update1 = $update * 2;
             $records = $update1 * 2;
             $records1 = $update1 * 4;
-            $filename = __DIR__ . "/rrd/cpu.rrd";
+            $filename = __DIR__ . "/rrd/cpu{$item}.rrd";
             $command = "create {$filename} --step {$update} \
-DS:user:COUNTER:{$update1}:0:9999999999999 \
-DS:system:COUNTER:{$update1}:0:9999999999999 \
-DS:iowait:COUNTER:{$update1}:0:9999999999999 \
-DS:irq:COUNTER:{$update1}:0:9999999999999 \
+DS:user:COUNTER:{$update1}:0:100 \
+DS:system:COUNTER:{$update1}:0:100 \
+DS:iowait:COUNTER:{$update1}:0:100 \
+DS:irq:COUNTER:{$update1}:0:100 \
 RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
@@ -299,11 +300,11 @@ RRA:AVERAGE:0.5:10:{$records1}";
             $records1 = $update1 * 4;
             $filename = __DIR__ . "/rrd/" . $item . ".rrd";
             $command = "create {$filename} --step {$update} \
-DS:total:COUNTER:{$update1}:0:9999999999999 \
-DS:free:COUNTER:{$update1}:0:9999999999999 \
-DS:available:COUNTER:{$update1}:0:9999999999999 \
-DS:buffers:COUNTER:{$update1}:0:9999999999999 \
-DS:cached:COUNTER:{$update1}:0:9999999999999 \
+DS:total:GAUGE:{$update1}:0:100 \
+DS:free:GAUGE:{$update1}:0:100 \
+DS:available:GAUGE:{$update1}:0:100 \
+DS:buffers:GAUGE:{$update1}:0:100 \
+DS:cached:GAUGE:{$update1}:0:100 \
 RRA:AVERAGE:0.5:1:{$records} \
 RRA:MIN:0.5:10:{$records1} \
 RRA:MAX:0.5:10:{$records1} \
