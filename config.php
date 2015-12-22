@@ -26,5 +26,6 @@ $config = [
     "monitor_disk" => ["sda", "sdb"],   // hard disk names to monitor
     "monitor_network" => ["eth0"],  // ethernet nic to monitor
     "monitor_memory" => ["memory"],
+    "monitor_cpu"=>[0],   // cpu
     "monitor_apache"=>[],   // apache
 ];

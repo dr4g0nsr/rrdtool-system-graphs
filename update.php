@@ -78,6 +78,22 @@ class rrd_tools {
 
     public function update_rrd() {
 
+        foreach ($this->config["monitor_cpu"] as $item) {
+            $info = $this->parse_proc("/proc/stat", 1);
+            $user = (int) $info[$item][0];
+            $nice = (int) $info[$item][1];
+            $system = (int) $info[$item][2];
+            $idle = (int) $info[$item][3];
+            $iowait = (int) $info[$item][4];
+            $irq = (int) $info[$item][5];
+            $softirq = (int) $info[$item][6];
+            $steal = (int) $info[$item][7];
+            $guest = (int) $info[$item][8];
+            $guest_nice = (int) $info[$item][9];
+            $command = "update " . __DIR__ . "/rrd/cpu.rrd N:{$user}:{$system}:{$iowait}:{$irq}";
+            $this->exec_rrd($command);
+        }
+
         foreach ($this->config["monitor_disk"] as $item) {
             $info = $this->parse_proc("/proc/diskstats", 3);
             $read = (int) $info[$item][0];
@@ -117,6 +133,21 @@ class rrd_tools {
 
     public function draw_graphs() {
         $html_links = "";
+        foreach ($this->config["monitor_cpu"] as $item) {
+            $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
+-t "CPU ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
+DEF:user=' . __DIR__ . '/rrd/' . $item . '.rrd:user:AVERAGE \
+DEF:system=' . __DIR__ . '/rrd/' . $item . '.rrd:system:AVERAGE \
+DEF:iowait=' . __DIR__ . '/rrd/' . $item . '.rrd:iowait:AVERAGE \
+DEF:irq=' . __DIR__ . '/rrd/' . $item . '.rrd:irq:AVERAGE \
+LINE1:user#0000FF:"User" \
+LINE1:system#00CCFF:"System" \
+LINE1:iowait#CCCCFF:"IOWait" \
+LINE1:irq#FF00FF:"IRQ" \
+';
+            $this->exec_rrd($command);
+            $html_links.="<img src='cpu{$item}.png'><br>\n";
+        }
         foreach ($this->config["monitor_disk"] as $item) {
             $command = 'graph ' . __DIR__ . '/graphs/' . $item . '.png \
 -t "Disk ' . $item . '" --end now --start end-120000s --width ' . $this->config["graph_width"] . ' \
@@ -182,7 +213,7 @@ LINE1:cached#FF0000:"Cached" \
     </head>
     <body>
         <div>' . $this->config["server"] . '</div>
-        ' . $html_links . '
+' . $html_links . '
     </body>
 </html>';
         file_put_contents("graphs/index.html", $html);
@@ -193,6 +224,28 @@ LINE1:cached#FF0000:"Cached" \
      * 
      */
     public function create_rrd() {
+
+        foreach ($this->config["monitor_cpu"] as $item) {
+            $update = (int) $this->config["update"];
+            $update1 = $update * 2;
+            $records = $update1 * 2;
+            $records1 = $update1 * 4;
+            $filename = __DIR__ . "/rrd/cpu.rrd";
+            $command = "create {$filename} --step {$update} \
+DS:user:COUNTER:{$update1}:0:9999999999999 \
+DS:system:COUNTER:{$update1}:0:9999999999999 \
+DS:iowait:COUNTER:{$update1}:0:9999999999999 \
+DS:irq:COUNTER:{$update1}:0:9999999999999 \
+RRA:AVERAGE:0.5:1:{$records} \
+RRA:MIN:0.5:10:{$records1} \
+RRA:MAX:0.5:10:{$records1} \
+RRA:AVERAGE:0.5:10:{$records1}";
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
+            $this->exec_rrd($command);
+        }
+
         foreach ($this->config["monitor_disk"] as $item) {
             $update = (int) $this->config["update"];
             $update1 = $update * 2;
